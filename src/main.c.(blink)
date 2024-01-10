@@ -1,0 +1,58 @@
+#include <ch32v30x.h>
+
+#include <debug.h>
+#include "stdbool.h"
+
+void NMI_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+void HardFault_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+
+#define LED1_PORT GPIOA
+GPIO_InitTypeDef Led1 = {
+		.GPIO_Pin = GPIO_Pin_9,
+		.GPIO_Speed = GPIO_Speed_10MHz,
+		.GPIO_Mode = GPIO_Mode_Out_PP
+};
+
+#define LED2_PORT GPIOA
+GPIO_InitTypeDef Led2 = {
+		.GPIO_Pin = GPIO_Pin_10,
+		.GPIO_Speed = GPIO_Speed_2MHz,
+		.GPIO_Mode = GPIO_Mode_Out_PP
+};
+
+int main(void)
+{
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	SystemCoreClockUpdate();
+	Delay_Init();
+	USART_Printf_Init(115200);	
+	// printf("SystemClk:%d\r\n",SystemCoreClock);
+	// printf( "ChipID:%08x\r\n", DBGMCU_GetCHIPID() );
+
+	GPIO_Init(LED1_PORT, &Led1);
+	GPIO_Init(LED2_PORT, &Led2);
+
+	while(1)
+	{
+		GPIO_WriteBit(LED1_PORT, Led1.GPIO_Pin, false);
+		printf("Led1: off \n");
+		Delay_Ms(1000);
+		GPIO_WriteBit(LED2_PORT, Led2.GPIO_Pin, false);
+		printf("Led2: off \n");
+		Delay_Ms(1000);
+		GPIO_WriteBit(LED1_PORT, Led1.GPIO_Pin, true);
+		printf("Led1: on \n");
+		Delay_Ms(1000);
+		GPIO_WriteBit(LED2_PORT, Led2.GPIO_Pin, true);
+		printf("Led2: on \n");
+		Delay_Ms(1000);
+	}
+}
+
+void NMI_Handler(void) {}
+void HardFault_Handler(void)
+{
+	while (1)
+	{
+	}
+}

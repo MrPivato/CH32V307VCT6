@@ -1,0 +1,48 @@
+#include <ch32v30x.h>
+
+#include <debug.h>
+#include "stdbool.h"
+
+void NMI_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+void HardFault_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+
+#define LED_PORT GPIOA
+GPIO_InitTypeDef Led = {
+	.GPIO_Pin = GPIO_Pin_10,
+	.GPIO_Speed = GPIO_Speed_10MHz,
+	.GPIO_Mode = GPIO_Mode_Out_PP};
+
+#define KEY_PORT GPIOA
+GPIO_InitTypeDef Key = {
+	.GPIO_Pin = GPIO_Pin_9,
+	.GPIO_Speed = GPIO_Speed_2MHz,
+	.GPIO_Mode = GPIO_Mode_IPU};
+
+int main(void)
+{
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+	SystemCoreClockUpdate();
+	Delay_Init();
+	USART_Printf_Init(115200);
+	// printf("SystemClk:%d\r\n",SystemCoreClock);
+	// printf( "ChipID:%08x\r\n", DBGMCU_GetCHIPID() );
+
+	GPIO_Init(LED_PORT, &Led);
+	GPIO_Init(KEY_PORT, &Key);
+
+	while (1)
+	{
+		if (GPIO_ReadInputDataBit(KEY_PORT, Key.GPIO_Pin) == false)
+			GPIO_WriteBit(LED_PORT, Led.GPIO_Pin, true);
+		else
+			GPIO_WriteBit(LED_PORT, Led.GPIO_Pin, false);
+	}
+}
+
+void NMI_Handler(void) {}
+void HardFault_Handler(void)
+{
+	while (1)
+	{
+	}
+}
